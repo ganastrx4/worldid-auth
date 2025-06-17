@@ -1,6 +1,6 @@
 import os
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, redirect, jsonify
 
 app = Flask(__name__)
 
@@ -49,9 +49,6 @@ def handle_callback():
     userinfo = userinfo_res.json()
     wallet = userinfo.get("wallet")
 
-    # Devuelve JSON con éxito y dirección wallet
-    return jsonify({
-        "success": True,
-        "wallet_address": wallet
-    })
+    # ✅ Redirigir con wallet al frontend
+    return redirect(f"https://ganastrx4.github.io/chc-flask-app/billetera.html?wallet={wallet}")
 
