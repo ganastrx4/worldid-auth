@@ -1,7 +1,6 @@
 import os
-import json
 import requests
-from flask import Flask, request, jsonify
+from flask import Flask, request, redirect, jsonify
 
 app = Flask(__name__)
 
@@ -11,10 +10,12 @@ def handle_callback():
     if not code:
         return jsonify({"error": "Falta el parámetro 'code'"}), 400
 
+    # Leer variables desde el entorno (Render → variables de entorno)
     CLIENT_ID = os.environ.get("WORLD_ID_APP_ID")
     CLIENT_SECRET = os.environ.get("WORLD_ID_API_KEY")
     REDIRECT_URI = "https://ganastrx4.github.io/chc-flask-app/buscador.html"
 
+    # Solicitar el token a World ID
     token_url = "https://id.worldcoin.org/token"
     data = {
         "grant_type": "authorization_code",
@@ -31,6 +32,7 @@ def handle_callback():
     tokens = token_res.json()
     access_token = tokens.get("access_token")
 
+    # Usar el token para obtener info del usuario
     userinfo_res = requests.get(
         "https://id.worldcoin.org/userinfo",
         headers={"Authorization": f"Bearer {access_token}"}
@@ -40,9 +42,8 @@ def handle_callback():
         return jsonify({"error": "Error al obtener perfil", "detalle": userinfo_res.text}), 500
 
     userinfo = userinfo_res.json()
-    return jsonify({
-        "success": True,
-        "wallet_address": userinfo.get("wallet"),
-        "userinfo": userinfo
-    })
+    wallet = userinfo.get("wallet")
+
+    # Redirigir al frontend con el wallet
+    return redirect(f"https://ganastrx4.github.io/chc-flask-app/billetera.html?wallet={wallet}")
 
