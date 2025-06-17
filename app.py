@@ -12,7 +12,7 @@ def handle_callback():
 
     CLIENT_ID = os.environ.get("WORLD_ID_APP_ID")
     CLIENT_SECRET = os.environ.get("WORLD_ID_API_KEY")
-    REDIRECT_URI = "https://ganastrx4.github.io/chc-flask-app/buscador.html"
+    REDIRECT_URI = "https://ganastrx4.github.io/chc-flask-app/dados.html"
 
     token_url = "https://id.worldcoin.org/token"
     data = {
