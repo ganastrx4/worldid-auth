@@ -1,4 +1,6 @@
-flask
+Flask==3.0.3
 requests
-gunicorn
+gunicorn==22.0.0
+
+
 
