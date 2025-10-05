@@ -5,7 +5,7 @@ import os
 app = Flask(__name__)
 
 CLIENT_ID = "app_7686f9027d3e3c0b53d987a3caf1e111"
-CLIENT_SECRET = os.getenv("WORLD_ID_SECRET", "pon_aqui_tu_secret_si_no_usas_env")
+CLIENT_SECRET = os.getenv("WORLD_ID_SECRET")
 REDIRECT_URI = "https://worldid-auth.onrender.com/callback"
 
 @app.route("/")
