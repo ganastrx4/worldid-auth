@@ -2,6 +2,7 @@ services:
   - type: web
     name: worldid-auth
     env: python
-    buildCommand: ""
+    plan: free
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
 
