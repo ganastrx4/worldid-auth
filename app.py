@@ -1,54 +1,44 @@
-import os
+from flask import Flask, redirect, request, render_template
 import requests
-from flask import Flask, request, redirect, jsonify
+import os
 
 app = Flask(__name__)
 
-@app.route("/callback", methods=["GET"])
-def handle_callback():
+CLIENT_ID = "app_7686f9027d3e3c0b53d987a3caf1e111"
+CLIENT_SECRET = os.getenv("WORLD_ID_SECRET", "pon_aqui_tu_secret_si_no_usas_env")
+REDIRECT_URI = "https://worldid-auth.onrender.com/callback"
+
+@app.route("/")
+def index():
+    # Enlace de inicio con World ID (nuevo flujo)
+    auth_url = f"https://id.worldcoin.org/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope=openid"
+    return f'<a href="{auth_url}">✅ Sign in with World ID</a>'
+
+@app.route("/callback")
+def callback():
     code = request.args.get("code")
+
     if not code:
-        return jsonify({"success": False, "error": "Falta el parámetro 'code'"}), 400
+        return "❌ No se recibió ningún código."
 
-    CLIENT_ID = os.environ.get("WORLD_ID_APP_ID")
-    CLIENT_SECRET = os.environ.get("WORLD_ID_API_KEY")
-    REDIRECT_URI = "https://ganastrx4.github.io/chc-flask-app/dados.html"
-
+    # Intercambiar el código por un token
     token_url = "https://id.worldcoin.org/token"
     data = {
         "grant_type": "authorization_code",
-        "client_id": CLIENT_ID,
-        "client_secret": CLIENT_SECRET,
+        "code": code,
         "redirect_uri": REDIRECT_URI,
-        "code": code
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET
     }
 
-    token_res = requests.post(token_url, data=data)
-    if token_res.status_code != 200:
-        return jsonify({
-            "success": False,
-            "error": "No se pudo obtener token",
-            "detalle": token_res.text
-        }), 500
+    response = requests.post(token_url, data=data)
+    token_info = response.json()
 
-    tokens = token_res.json()
-    access_token = tokens.get("access_token")
+    if "error" in token_info:
+        return f"❌ Error: {token_info['error_description']}"
 
-    userinfo_res = requests.get(
-        "https://id.worldcoin.org/userinfo",
-        headers={"Authorization": f"Bearer {access_token}"}
-    )
+    id_token = token_info.get("id_token")
+    return redirect(f"/billetera.html?token={id_token}")
 
-    if userinfo_res.status_code != 200:
-        return jsonify({
-            "success": False,
-            "error": "Error al obtener perfil",
-            "detalle": userinfo_res.text
-        }), 500
-
-    userinfo = userinfo_res.json()
-    wallet = userinfo.get("wallet")
-
-    # ✅ Redirigir con wallet al frontend
-    return redirect(f"https://ganastrx4.github.io/chc-flask-app/billetera.html?wallet={wallet}")
-
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
